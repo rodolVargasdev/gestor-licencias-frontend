@@ -1,24 +1,13 @@
 export interface Trabajador {
   id: number;
-  codigo: string;
-  nombre_completo: string;
+  nombre: string;
+  apellido: string;
   email: string;
-  telefono: string | null;
-  departamento_id: number | null;
-  puesto_id: number | null;
-  tipo_personal: 'OPERATIVO' | 'ADMINISTRATIVO';
-  fecha_ingreso: string;
+  departamento_id: number;
+  puesto_id: number;
   activo: boolean;
-  fecha_creacion: string;
-  fecha_actualizacion: string;
-  departamento?: {
-    id: number;
-    nombre: string;
-  };
-  puesto?: {
-    id: number;
-    nombre: string;
-  };
+  created_at: string;
+  updated_at: string;
 }
 
 export interface CreateTrabajadorDTO {
