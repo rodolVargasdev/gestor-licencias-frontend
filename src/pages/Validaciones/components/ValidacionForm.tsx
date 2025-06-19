@@ -31,16 +31,12 @@ const validationSchema = Yup.object({
     .required('El tipo de licencia es requerido'),
   trabajador_id: Yup.number()
     .required('El trabajador es requerido'),
-  fecha_inicio: Yup.string()
-    .required('La fecha de inicio es requerida'),
-  fecha_fin: Yup.string()
+  fecha_inicio: Yup.date()
+    .required('La fecha de inicio es requerida')
+    .min(new Date(), 'La fecha de inicio no puede ser anterior a hoy'),
+  fecha_fin: Yup.date()
     .required('La fecha de fin es requerida')
-    .test('fecha-fin-despues', 'La fecha de fin debe ser posterior a la fecha de inicio', 
-      function(value) {
-        const { fecha_inicio } = this.parent;
-        if (!fecha_inicio || !value) return true;
-        return new Date(value) >= new Date(fecha_inicio);
-    }),
+    .min(Yup.ref('fecha_inicio'), 'La fecha de fin debe ser posterior a la fecha de inicio'),
   observaciones: Yup.string()
     .max(500, 'Las observaciones no pueden tener más de 500 caracteres')
 });
@@ -61,12 +57,12 @@ const ValidacionForm: React.FC<ValidacionFormProps> = ({
   }, [dispatch]);
 
   const formik = useFormik<CreateValidacionDTO>({
-    initialValues: {
-      tipo_licencia_id: initialValues?.tipo_licencia_id || 0,
-      trabajador_id: initialValues?.trabajador_id || 0,
-      fecha_inicio: initialValues?.fecha_inicio || '',
-      fecha_fin: initialValues?.fecha_fin || '',
-      observaciones: initialValues?.observaciones || ''
+    initialValues: initialValues || {
+      tipo_licencia_id: 0,
+      trabajador_id: 0,
+      fecha_inicio: new Date().toISOString().split('T')[0],
+      fecha_fin: new Date().toISOString().split('T')[0],
+      observaciones: ''
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -93,19 +89,19 @@ const ValidacionForm: React.FC<ValidacionFormProps> = ({
         {isEditing ? 'Editar Validación' : 'Nueva Validación'}
       </Typography>
 
-      <Box component="form" onSubmit={formik.handleSubmit} noValidate>
-        <Grid container spacing={2}>
+      <form onSubmit={formik.handleSubmit}>
+        <Grid container spacing={3}>
           <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
+            <FormControl fullWidth error={formik.touched.tipo_licencia_id && Boolean(formik.errors.tipo_licencia_id)}>
               <InputLabel>Tipo de Licencia</InputLabel>
               <Select
+                id="tipo_licencia_id"
                 name="tipo_licencia_id"
                 value={formik.values.tipo_licencia_id}
                 onChange={formik.handleChange}
-                error={formik.touched.tipo_licencia_id && Boolean(formik.errors.tipo_licencia_id)}
                 label="Tipo de Licencia"
               >
-                {tiposLicencias.map(tipo => (
+                {tiposLicencias.map((tipo) => (
                   <MenuItem key={tipo.id} value={tipo.id}>
                     {tipo.nombre}
                   </MenuItem>
@@ -115,16 +111,16 @@ const ValidacionForm: React.FC<ValidacionFormProps> = ({
           </Grid>
 
           <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
+            <FormControl fullWidth error={formik.touched.trabajador_id && Boolean(formik.errors.trabajador_id)}>
               <InputLabel>Trabajador</InputLabel>
               <Select
+                id="trabajador_id"
                 name="trabajador_id"
                 value={formik.values.trabajador_id}
                 onChange={formik.handleChange}
-                error={formik.touched.trabajador_id && Boolean(formik.errors.trabajador_id)}
                 label="Trabajador"
               >
-                {trabajadores.map(trabajador => (
+                {trabajadores.map((trabajador) => (
                   <MenuItem key={trabajador.id} value={trabajador.id}>
                     {`${trabajador.nombre} ${trabajador.apellido}`}
                   </MenuItem>
@@ -136,6 +132,7 @@ const ValidacionForm: React.FC<ValidacionFormProps> = ({
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
+              id="fecha_inicio"
               name="fecha_inicio"
               label="Fecha de Inicio"
               type="date"
@@ -143,13 +140,16 @@ const ValidacionForm: React.FC<ValidacionFormProps> = ({
               onChange={formik.handleChange}
               error={formik.touched.fecha_inicio && Boolean(formik.errors.fecha_inicio)}
               helperText={formik.touched.fecha_inicio && formik.errors.fecha_inicio}
-              InputLabelProps={{ shrink: true }}
+              InputLabelProps={{
+                shrink: true,
+              }}
             />
           </Grid>
 
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
+              id="fecha_fin"
               name="fecha_fin"
               label="Fecha de Fin"
               type="date"
@@ -157,7 +157,9 @@ const ValidacionForm: React.FC<ValidacionFormProps> = ({
               onChange={formik.handleChange}
               error={formik.touched.fecha_fin && Boolean(formik.errors.fecha_fin)}
               helperText={formik.touched.fecha_fin && formik.errors.fecha_fin}
-              InputLabelProps={{ shrink: true }}
+              InputLabelProps={{
+                shrink: true,
+              }}
             />
           </Grid>
 
@@ -194,7 +196,7 @@ const ValidacionForm: React.FC<ValidacionFormProps> = ({
             </Box>
           </Grid>
         </Grid>
-      </Box>
+      </form>
     </Paper>
   );
 };

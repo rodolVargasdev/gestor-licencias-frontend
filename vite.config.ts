@@ -1,29 +1,36 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { resolve } from 'path';
+import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    host: true
+    proxy: {
+      '/api': {
+        target: process.env.VITE_API_URL || 'http://localhost:3000',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
   },
   define: {
     'process.env': {}
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
-    }
+      '@': path.resolve(__dirname, './src'),
+    },
   },
   optimizeDeps: {
     include: ['xlsx', 'jspdf', 'jspdf-autotable'],
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false,
     commonjsOptions: {
-      include: []
-    }
+      include: [/xlsx/, /jspdf/, /jspdf-autotable/],
+    },
   },
 });
