@@ -23,10 +23,6 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
-<<<<<<< HEAD
-    commonjsOptions: {
-      include: [/xlsx/, /jspdf/, /jspdf-autotable/],
-=======
     minify: 'terser',
     rollupOptions: {
       output: {
@@ -35,7 +31,6 @@ export default defineConfig({
           mui: ['@mui/material', '@mui/icons-material'],
         },
       },
->>>>>>> test
     },
   },
 });
